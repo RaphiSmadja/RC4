@@ -5,56 +5,74 @@
 #include <bits/stdc++.h>
 #include <fstream>
 
-#define N 256 // 2^8
-
+// file -e $ ./main
+//main {-e|-d} NB_THREADS INPUT_FILE OUTPUT_FILE
 using namespace Rc4::sequential;
+void check_nb_args(int argc);
+void check_args(char **pString);
+char* initializeRSA(char *str);
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
-    {
-        cerr << "Must specify file!";
-        return 0;
-    }
-    if (argc > 2)
-    {
-        cerr << "Too many arguments!";
-        return 0;
-    }
-    unsigned char S[256];
+    check_nb_args(argc);
+    check_args(argv);
+    unsigned char str[256];
+    str = initializeRSA(str);
     int i = 0;
-    for (i = 0; i < 256; i++)
-        S[i] = i;
-    int j = 0, choice = 0;
-    while (choice != 1 && choice != 2)
-    {
-        cout << "Encryption - 1, decryption - 2: ";
-        cin >> choice;
-    }
-    string key;
-    cout << "Enter the key: ";
-    cin >> key;
+    for (i; i < 256; i++)
+        str[i] = i;
+    int j = 0;
+    string key = argv[4];
     for (i = 0; i < 256; i++)
     {
-        j = (j + S[i] + key.at(i % key.length())) % 256;
-        swap(S[i], S[j]);
+        j = (j + str[i] + key.at(i % key.length())) % 256;
+        std::swap(str[i], str[j]);
     }
-    string argv1 = argv[1], printFile;
-    ifstream read(argv1, ios::binary);
-    if (choice == 1)
-        printFile = argv1 + ".rc4";
-    if (choice == 2)
-        printFile = "1" + argv1.substr(0, argv1.length() - 4);
-    ofstream print(printFile, ios::binary) ;
+    string fileName = argv[3], printFile;
+    std::ifstream read(fileName.c_str(), ios::binary);
+    if (strcmp(argv[1],"-e") == 0)
+        printFile = fileName + ".rc4";
+    if (strcmp(argv[1],"-d") == 0)
+        printFile = fileName + ".decrypt";
+    std::ofstream print(printFile.c_str(), ios::binary) ;
     char x;
     j = 0;
     i = 0;
     while (read.read(&x, 1))
     {
         i = (i + 1) % 256;
-        j = (j + S[i]) % 256;
-        swap(S[i], S[j]);
-        char tmp = S[(S[i] + S[j]) % 256];
+        j = (j + str[i]) % 256;
+        std::swap(str[i], str[j]);
+        char tmp = str[(str[i] + str[j]) % 256];
         char result_encrypt = tmp ^ x;
         print.write(&result_encrypt, 1);
+    }
+}
+
+void check_args(char **pString) {
+    if (strcmp(pString[1],"-e") !=0  && strcmp(pString[1],"-d") !=0){
+        cerr << "choose -e to encrypt or -d to decrypt";
+    }
+    int nbThread = atoi(pString[2]);
+    if (nbThread<0){
+        cerr << "choose number of thread";
+    }
+    ifstream myfile (pString[3]);
+    if (myfile.is_open()){
+        myfile.close();
+    }else {
+        cerr << "File not exist";
+    }
+    if (strlen(pString[4]) == 0){
+        cerr << "The key can't empty";
+    }
+}
+
+void check_nb_args(int argc){
+    if (argc < 5){
+        cerr << "Too little arguments";
+    } else if (argc > 5) {
+        cerr << "Too more arguments";
+    } else {
+        cout << "Ok";
     }
 }
